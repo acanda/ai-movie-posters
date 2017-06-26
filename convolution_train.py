@@ -9,7 +9,9 @@ from keras.losses import categorical_crossentropy
 from keras.optimizers import Adadelta
 from keras.callbacks import TensorBoard
 
-input_path = "input"
+input_path = Path("input")
+model_path = Path("models")
+
 poster_width = 48  # 182 / 3.7916
 poster_height = 64  # 268 / 4.1875
 poster_channels = 3  # RGB
@@ -19,7 +21,7 @@ batch_size = 256
 
 
 def poster_file(movie):
-    return input_path + "/SampleMoviePosters/" + str(movie[0]) + ".jpg"
+    return input_path / "SampleMoviePosters" / f"{movie[0]}.jpg"
 
 
 def has_poster(movie):
@@ -59,7 +61,7 @@ def encode(series, uniques):
 
 
 def load_data(path):
-    csv = path + "/MovieGenre.csv"
+    csv = path / "MovieGenre.csv"
     movies = pd.read_csv(csv, encoding="ISO-8859-1", usecols=['imdbId', 'Genre'], keep_default_na=False)
     movies = movies[movies.apply(lambda d: has_genre(d) and has_poster(d), axis=1)]
     movies = movies.sample(frac=1).reset_index(drop=True)
@@ -108,8 +110,9 @@ history = model.fit(x_train, y_train,
                     validation_data=(x_validation, y_validation),
                     callbacks=[tensorboard])
 
-model.save(f"models/conv-model-e{epochs}-b{batch_size}.h5")
-model.save_weights(f"models/conv-weights-e{epochs}-b{batch_size}.h5")
+model_path.mkdir(parents=True, exist_ok=True)
+model.save(model_path / f"conv-model-e{epochs}-b{batch_size}.h5")
+model.save_weights(model_path/f"conv-weights-e{epochs}-b{batch_size}.h5")
 
 score = model.evaluate(x_validation, y_validation, verbose=0)
 print('Test loss:', score[0])
@@ -123,4 +126,4 @@ print("Prediction:", model.predict(x_data[-4:-1]))
 
 print("\nGenres:", movie_genres)
 
-keras.utils.plot_model(model, to_file=f"models/convolution.png", show_shapes=True)
+keras.utils.plot_model(model, to_file=str(model_path / "convolution.png"), show_shapes=True)
