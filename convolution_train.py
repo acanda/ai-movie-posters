@@ -33,10 +33,10 @@ def has_genre(movie):
 
 
 def movie_poster(movie):
-    poster = Image.open(poster_file(movie))
-    poster = poster.resize((poster_width, poster_height), resample=Image.LANCZOS)
-    poster = poster.convert('RGB')
-    return np.asarray(poster) / 255
+    with Image.open(poster_file(movie)) as poster:
+        poster = poster.resize((poster_width, poster_height), resample=Image.LANCZOS)
+        poster = poster.convert('RGB')
+        return np.asarray(poster) / 255
 
 
 def unique(series_of_lists):
