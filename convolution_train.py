@@ -113,11 +113,11 @@ history = model.fit(x_train, y_train,
 
 model_path.mkdir(parents=True, exist_ok=True)
 model.save(model_path / f"conv-model-e{epochs}-b{batch_size}.h5")
-model.save_weights(model_path/f"conv-weights-e{epochs}-b{batch_size}.h5")
+model.save_weights(model_path / f"conv-weights-e{epochs}-b{batch_size}.h5")
 
-score = model.evaluate(x_validation, y_validation, verbose=0)
-print('Test loss:', score[0])
-print('Test accuracy:', score[1])
+(validation_loss, validation_accuracy) = model.evaluate(x_validation, y_validation, verbose=0)
+print('\nValidation loss:', validation_loss)
+print('Validation accuracy:', validation_accuracy)
 
 print("\nInput (from training data):", y_data[0:3])
 print("Prediction:", model.predict(x_data[0:3]))
