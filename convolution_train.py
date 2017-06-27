@@ -8,6 +8,7 @@ from keras.layers import Dense, Conv2D, MaxPooling2D, Dropout, Flatten
 from keras.losses import categorical_crossentropy
 from keras.optimizers import Adadelta
 from keras.callbacks import TensorBoard
+import time
 
 input_path = Path("input")
 model_path = Path("models")
@@ -101,7 +102,7 @@ y_validation = y_data[separator:len(y_data)]
 model = create_cnn(poster_height, poster_width, poster_channels, movie_genres)
 model.summary()
 
-tensorboard = TensorBoard(write_images=True)
+tensorboard = TensorBoard(log_dir=f"./logs/{time.strftime('%Y%m%d-%H%M%S')}", write_images=True)
 
 history = model.fit(x_train, y_train,
                     batch_size=batch_size,
