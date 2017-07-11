@@ -1,8 +1,6 @@
 import pandas as pd
 import numpy as np
 from pathlib import Path
-import keras
-from keras import backend as K
 from keras.models import Sequential
 from keras.layers import Dense, Conv2D, MaxPooling2D, Dropout, Flatten
 from keras.losses import categorical_crossentropy, binary_crossentropy
@@ -18,7 +16,7 @@ poster_width = 96  # 182 / 3.7916
 poster_height = 128  # 268 / 4.1875
 poster_channels = 'RGB'
 
-epochs = 25
+epochs = 5
 batch_size = 256
 
 
@@ -64,11 +62,14 @@ def load_poster(path, imdb_id):
 def load_data(path, genre):
     csv = path / 'MovieGenre.csv'
     df = pd.read_csv(csv, encoding="ISO-8859-1", usecols=['imdbId', 'Genre'], keep_default_na=False)
+    # exclude movies without a poster
     df = df[df.imdbId.map(lambda imdb_id: poster_file(path, imdb_id).is_file())]
+    # exclude movies without any genre
     df = df[df.Genre.map(lambda g: len(g) > 0)]
+    # shuffle movies
     df = df.sample(frac=1).reset_index(drop=True)
-    x = np.array(df.imdbId.map(lambda imdb_id: load_poster(path, imdb_id)).values)
-    y = np.array(df.Genre.str.split('|').map(lambda gs: genre in gs).values)
+    x = np.array(list(df.imdbId.map(lambda imdb_id: load_poster(path, imdb_id)).values))
+    y = df.Genre.str.split('|').map(lambda gs: genre in gs).values
     separator = len(x) * 3 // 4
     return x[:separator], y[:separator], x[separator:], y[separator:]
 
@@ -78,7 +79,7 @@ for movie_genre in movie_genres:
     model = create_cnn(poster_height, poster_width, len(poster_channels))
     x_train, y_train, x_validation, y_validation = load_data(input_path, movie_genre)
 
-    tensor_board = TensorBoard(log_dir=f"./logs/{time.strftime('%Y-%m-%d %H.%M.%S')}", write_images=True)
+    tensor_board = TensorBoard(log_dir=f"./logs/{time.strftime('%Y-%m-%d %H.%M.%S')}-{movie_genre}", write_images=True)
 
     history = model.fit(x_train, y_train,
                         batch_size=batch_size,
